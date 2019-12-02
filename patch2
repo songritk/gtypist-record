@@ -1,0 +1,54 @@
+--- a/gtypist-2.9.2/src/gtypist.c	2019-12-02 22:52:33.179185900 +0700
++++ gtypist-2.9.2/src/gtypist.c	2019-12-02 22:46:22.020431221 +0700
+@@ -521,20 +521,38 @@
+     ( new_best_speed? 1 : 0 );
+ 
+   /* display everything */
+-  if( cl_scoring_cpm )
++  if( cl_scoring_cpm ){
+     sprintf( message, SPEED_RAW_CPM, cpm );
+-  else
++    #ifdef HKIM
++  	gtypist_log(strip(message));
++    #endif
++  } else{
+     sprintf( message, SPEED_RAW_WPM, cpm / (double)5.0 );
++    #ifdef HKIM
++  	gtypist_log(strip(message));
++    #endif
++  }
+   move( line++, COLS - utf8len( message ) - 1 );
+   ADDSTR_REV( message );
+-  if( cl_scoring_cpm )
++  if( cl_scoring_cpm ) {
+     sprintf( message, SPEED_ADJ_CPM, adjusted_cpm );
+-  else
++    #ifdef HKIM
++  	gtypist_log(strip(message));
++    #endif
++  }else{
+     sprintf( message, SPEED_ADJ_WPM, adjusted_cpm / (double)5.0 );
++    #ifdef HKIM
++  	gtypist_log(strip(message));
++    #endif
++  }
+   move( line++, COLS - utf8len( message ) - 1 );
+   ADDSTR_REV( message );
+   sprintf( message, SPEED_PCT_ERROR,
+            (double)100.0 * (double)errcount / (double)total_chars );
++  #ifdef HKIM
++  	gtypist_log(strip(message));
++  #endif
++  
+   move( line++, COLS - utf8len( message ) - 1 );
+   ADDSTR_REV( message );
+   if( had_best_speed )
+@@ -552,7 +570,7 @@
+       ADDSTR_REV( SPEED_BEST_NEW_MSG );
+     }
+ #ifdef HKIM
+-  gtypist_log(strip(message));
++//  gtypist_log(strip(message));
+ #endif
+ }
+

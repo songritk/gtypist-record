@@ -24,6 +24,7 @@ $ tar xfz gtypist-2.9.2.tar.gz
 $ cd gtypist-2.9.2
 $ ./configure --prefix=/edu
 $ patch -p1 <../patch
+$ patch -p1 <../patch2
 $ make
 $ make install
 ```
