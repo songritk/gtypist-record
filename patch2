@@ -1,6 +1,33 @@
 --- a/gtypist-2.9.2/src/gtypist.c	2019-12-02 22:52:33.179185900 +0700
 +++ gtypist-2.9.2/src/gtypist.c	2019-12-02 22:46:22.020431221 +0700
-@@ -521,20 +521,38 @@
+@@ -88,6 +88,7 @@
+ char *MODE_DRILL;
+ char *MODE_SPEEDTEST;
+ 
++
+ /* yes/no responses and miscellanea */
+ #define	QUERY_Y			'Y'
+ #define	QUERY_N			'N'
+@@ -111,6 +112,9 @@
+ wchar_t *YN;
+ wchar_t *RNE;
+ 
++
++char	result_text[MAX_WIN_LINE];	 /* message buffer */
++
+ #ifdef MINGW
+ #define DATADIR "lessons"
+ #else
+@@ -484,6 +488,8 @@
+   double	best_cpm;			/* personal best speed in CPM */
+   char		*raw_speed_str, *adj_speed_str, *best_speed_str;
+ 
++  char	text_summary[MAX_WIN_LINE];	 /* message buffer */
++
+   /* calculate the speeds */
+   test_time = (double)elapsed_time / (double)60.0;
+   if( elapsed_time > 0 )
+@@ -521,20 +527,23 @@
      ( new_best_speed? 1 : 0 );
  
    /* display everything */
@@ -8,14 +35,8 @@
 +  if( cl_scoring_cpm ){
      sprintf( message, SPEED_RAW_CPM, cpm );
 -  else
-+    #ifdef HKIM
-+  	gtypist_log(strip(message));
-+    #endif
 +  } else{
      sprintf( message, SPEED_RAW_WPM, cpm / (double)5.0 );
-+    #ifdef HKIM
-+  	gtypist_log(strip(message));
-+    #endif
 +  }
    move( line++, COLS - utf8len( message ) - 1 );
    ADDSTR_REV( message );
@@ -23,32 +44,42 @@
 +  if( cl_scoring_cpm ) {
      sprintf( message, SPEED_ADJ_CPM, adjusted_cpm );
 -  else
-+    #ifdef HKIM
-+  	gtypist_log(strip(message));
-+    #endif
 +  }else{
      sprintf( message, SPEED_ADJ_WPM, adjusted_cpm / (double)5.0 );
-+    #ifdef HKIM
-+  	gtypist_log(strip(message));
-+    #endif
 +  }
    move( line++, COLS - utf8len( message ) - 1 );
    ADDSTR_REV( message );
    sprintf( message, SPEED_PCT_ERROR,
             (double)100.0 * (double)errcount / (double)total_chars );
-+  #ifdef HKIM
-+  	gtypist_log(strip(message));
-+  #endif
 +  
    move( line++, COLS - utf8len( message ) - 1 );
    ADDSTR_REV( message );
    if( had_best_speed )
-@@ -552,7 +570,7 @@
+@@ -552,7 +561,9 @@
        ADDSTR_REV( SPEED_BEST_NEW_MSG );
      }
  #ifdef HKIM
 -  gtypist_log(strip(message));
-+//  gtypist_log(strip(message));
++  sprintf(text_summary," : %6.2f %6.2f %6.2f",cpm / (double)5.0 , adjusted_cpm / (double)5.0,(double)100.0 * (double)errcount / (double)total_chars );
++  strcat(result_text,text_summary);
++  gtypist_log(result_text);
  #endif
  }
-
+ 
+@@ -696,6 +707,7 @@
+   int	chars_in_the_line_typed;
+   bool  seek_done = FALSE;       /* was there a seek_label before exit? */
+   int	error_sync;		 /* error resync state */
++  
+ 
+   /* note the drill type to see if we need to make the user repeat */
+   drill_type = SCR_COMMAND( line );
+@@ -1633,7 +1645,7 @@
+     {
+ #ifdef HKIM
+ 	    if (strncmp(line, "*:",2)==0) {
+-		    gtypist_log(line);
++		    strcpy(result_text,line);
+ 	    }
+ #endif
+       command = SCR_COMMAND( line );
